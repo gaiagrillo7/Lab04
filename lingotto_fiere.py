@@ -84,6 +84,46 @@ class Stand:
     def __repr__(self):
         return self.__str__()
 
+#creo le classi figlie StandPrese e StandPremium
+class StandPrese(Stand):
+    def __init__(self, codice, superficie, padiglione, prezzo_base, numero_prese):
+        super().__init__(codice, superficie, padiglione, prezzo_base)
+        self._numero_prese = int(numero_prese)
+
+    @property
+    def numero_prese(self):
+        return self._numero_prese
+
+
+#POLIMORFISMO: faccio overriding di calcola prezzo della classe padre
+    def calcola_prezzo(self):
+        #applica un sovrapprezzo del 7% per ogni presa elettrica
+        return self.prezzo_base * (1 + 0.07 * self._numero_prese)
+
+    def __str__(self):
+        stato = "Disponibile" if self.disponibile() else f"Assegnato a {self._espositore.codice}"
+        mq = int(self.superficie) if self.superficie.is_integer() else self.superficie
+        return (f"{self._codice}: Prese Extra | {mq} mq - Padiglione {self._padiglione} - "
+                f"Prezzo {self.calcola_prezzo():.2f}€ - Prese aggiuntive: {self._numero_prese} - {stato}")
+
+class StandPremium(Stand):
+    def __init__(self, codice, superficie, padiglione, prezzo_base, posizione):
+        super().__init__(codice, superficie, padiglione, prezzo_base)
+        self._posizione = str(posizione)
+
+    @property
+    def posizione(self):
+        return self._posizione
+#POLIMORFISMO: faccio overriding di calcola_prezzo
+    def calcola_prezzo(self):           #applica una maggiorazione del 30% sul prezzo base
+        return self.prezzo_base * 1.30
+
+    def __str__(self):
+        stato = "Disponibile" if self.disponibile else f"Assegnato a {self._espositore.codice}"
+        mq = int(self.superficie) if self.superficie.is_integer() else self.superficie
+        return (f"{self._codice}: Premium | {mq} mq - Padiglione {self._padiglione} - "
+                f"Prezzo {self.calcola_prezzo():.2f}€ - Posizione: {self._posizione} - {stato}")
+
 
 
 
