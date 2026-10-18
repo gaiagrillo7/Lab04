@@ -125,40 +125,114 @@ class StandPremium(Stand):
                 f"Prezzo {self.calcola_prezzo():.2f}€ - Posizione: {self._posizione} - {stato}")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#Implemento la classe LingottoFiere
 class LingottoFiere:
     def __init__(self, nome):
-        """Inizializza gli attributi e le strutture dati"""
-        # TODO
+        # inizializzo attributo nime e creo due liste che conterranno le istanze caricate dal file
+        self._nome = nome
+        self._stand = []
+        self._espositori = []
 
-    """Aggiungere setter e getter se necessari"""
-    # TODO
+    @property
+    def nome(self):
+        return self._nome
+
+    @nome.setter
+    def nome(self, nuovo_nome):
+        if nuovo_nome and nuovo_nome.strip():
+            self._nome = nuovo_nome.strip()
+
 
     def carica_file_dati(self, file_path):
         """Carica i dati (stand ed espositori) dal file"""
-        # TODO
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue   #per saltare eventuali righ vuote
+
+                    campi =  [c.strip() for c in line.split(",")]
+                    codice = campi[0]
+
+                    if codice.startswith("ES"):   #se la riga descrive in Espositore
+                        if len(campi) >= 3:
+                            espositore = Espositore(codice=campi[0], mome=campi[1], cognome=campi[2])
+                            self._espositori.append(espositore)
+
+                    elif codice.startswith("ST"):  #se riga descrive stand
+                        if len(campi) == 4:         #stand standard
+                            stand = Stand(campi[0], campi[1], campi[2], campi[3])
+                            self._stand.append(stand)
+                        elif len(campi) == 5:      #strandPrese oppure standPremium
+                            quinto_valore = campi[4]
+                            #se quinto valore è un numero ho StandPrese
+                            if quinto_valore.isdigit():
+                                stand = StandPrese(campi[0], campi[1], campi[2], campi[3], quinto_valore)
+                            #se quinto valore è testo
+                            else:
+                                stand = StandPremium(campi[0], campi[1], campi[2], campi[3], quinto_valore)
+
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Errore: file {file_path} non trovato.")
+
+
+
+
 
     def assegna_stand_a_espositore(self, codice_stand, codice_espositore):
         """Associa uno stand a un espositore"""
-        # TODO
+        #controllo che lo stand esista
+        stand_trovato = None
+        for s in self._stand:
+            if s.codice == codice_stand:
+                stand_trovato = s
+                break
+            if stand_trovato is None:
+                raise Exception(f"Lo stand  '{codice_stand}' non esiste")
+
+        #controlloche l'espositore esista
+        espositore_trovato = None
+        for e in self._espositori:
+            if e.codice == codice_espositore:
+                espositore_trovato = e
+                break
+            if espositore_trovato is None:
+                raise Exception(f"Lo stand  '{codice_espositore}' non esiste.")
+
+        #controllo che lo stand sia disponibile
+        if not stand_trovato.disponibile:
+            raise Exception(f"Lo stand  '{codice_stand}' è già occupato.")
+
+        #controllo che l'espositore non abbia già un altro stand assegnato
+        for s in self._stand:
+            if s.espositore == espositore_trovato:
+                raise Exception(f"L'espositore  '{codice_espositore}' posside già lo stand '{s.codice}.")
+
+        #se passano tutti i controlli uso il setter
+        stand_trovato.espositore = espositore_trovato
 
     def elenca_espositori(self):
         """Stampa l'elenco degli espositori mostrando, per ognuno, lo stand a cui è associato, quando applicabile """
-        # TODO
+        if not self._espositori:
+            print("Nessun espositore presente.")
+            return
+
+        for e in self._espositori:
+            stand_collegato = None   #cerco se l'espositore ha uno stand associato
+            for s in self._stand:
+                if s.espositore == e:    #sfrutto l'uguaglianza tra oggrtti
+                    stand_collegato = s
+                    break
+
+            if stand_collegato is None:
+                print(f"{e} -> Stand assegnato: {stand_collegato.codice}")
+            else:
+                print(f"{e} -> Nessuno stand assegnato")
+
 
     def stand_ordinati_per_prezzo(self):
         """Restituisce la lista ordinata degli stand in base al prezzo"""
-        # TODO
+        #avendo definito il metodo speciale __lt__ nella classe Padre Stand, sorted() ordinerà automaticamente
+        #per prezzo
+        return sorted(self._stand)
