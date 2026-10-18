@@ -19,8 +19,8 @@ def main():
 
         if scelta == "1":
             nuovo_nome = input("Inserisci il nuovo nome del centro fieristico: ")
-            # TODO: Aggiorna il nome del centro fieristico
-
+            lingotto.nome = nuovo_nome  #cosi chiama il @nome setter che ho definito nella classe LingottoFiere
+            print(f"Nome aggiornato con successi in: '{lingotto.nome}'")
         elif scelta == "2":
             file_path = "dati_lingotto.csv"
             try:
