@@ -77,9 +77,9 @@ class Stand:
 
     def __str__(self):
         #costruisco lo stato di disponibilità
-        stato = "Diponibile" if self.disponibile() else f"Assegnato a {self._espositore.codice}"
+        stato = "Disponibile" if self.disponibile else f"Assegnato a {self._espositore.codice}"
         mq = int(self._superficie) if self._superficie.is_integer() else self._superficie
-        return f"{self.superficie}: Standard | {mq} mq - Padiglione {self._padiglione} - Prezzo {self.calcola_prezzo():.2f} - {stato}"
+        return f"{self.codice}: Standard | {mq} mq - Padiglione {self._padiglione} - Prezzo {self.calcola_prezzo():.2f}€ - {stato}"
 
     def __repr__(self):
         return self.__str__()
@@ -101,7 +101,7 @@ class StandPrese(Stand):
         return self.prezzo_base * (1 + 0.07 * self._numero_prese)
 
     def __str__(self):
-        stato = "Disponibile" if self.disponibile() else f"Assegnato a {self._espositore.codice}"
+        stato = "Disponibile" if self.disponibile else f"Assegnato a {self._espositore.codice}"
         mq = int(self.superficie) if self.superficie.is_integer() else self.superficie
         return (f"{self._codice}: Prese Extra | {mq} mq - Padiglione {self._padiglione} - "
                 f"Prezzo {self.calcola_prezzo():.2f}€ - Prese aggiuntive: {self._numero_prese} - {stato}")
@@ -157,7 +157,7 @@ class LingottoFiere:
 
                     if codice.startswith("ES"):   #se la riga descrive in Espositore
                         if len(campi) >= 3:
-                            espositore = Espositore(codice=campi[0], mome=campi[1], cognome=campi[2])
+                            espositore = Espositore(campi[0], campi[1], campi[2])
                             self._espositori.append(espositore)
 
                     elif codice.startswith("ST"):  #se riga descrive stand
@@ -172,6 +172,7 @@ class LingottoFiere:
                             #se quinto valore è testo
                             else:
                                 stand = StandPremium(campi[0], campi[1], campi[2], campi[3], quinto_valore)
+                            self._stand.append(stand)
 
         except FileNotFoundError:
             raise FileNotFoundError(f"Errore: file {file_path} non trovato.")
@@ -225,7 +226,7 @@ class LingottoFiere:
                     stand_collegato = s
                     break
 
-            if stand_collegato is None:
+            if stand_collegato is not None:
                 print(f"{e} -> Stand assegnato: {stand_collegato.codice}")
             else:
                 print(f"{e} -> Nessuno stand assegnato")
